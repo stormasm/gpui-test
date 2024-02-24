@@ -3,16 +3,29 @@ use std::time::Duration;
 use chrono::{DateTime, Local};
 use gpui::*;
 
-struct Wrapper {}
+struct Wrapper {
+    datum: View<Datum>,
+}
+
 impl Wrapper {
-    fn new() -> Self {
-        Self {}
+    fn new(cx: &mut ViewContext<Self>) -> Self {
+        Self {
+            datum: cx.new_view(|cx| {
+                let app_state = cx.global::<AppState>();
+                let global_store = app_state.global_store.clone();
+
+                cx.observe(&global_store, |_, _, cx| {
+                    cx.notify();
+                })
+                .detach();
+
+                Datum::new()
+            }),
+        }
     }
 }
 impl Render for Wrapper {
     fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
-        let datum = cx.new_view(|_| Datum::new());
-
         div()
             .size_full()
             .text_color(white())
@@ -21,7 +34,7 @@ impl Render for Wrapper {
             .gap_3()
             .justify_center()
             .items_center()
-            .child(datum)
+            .child(self.datum.clone())
     }
 }
 struct Datum {}
@@ -34,14 +47,8 @@ impl Render for Datum {
     fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
         let app_state = cx.global::<AppState>();
         let time = app_state.global_store.read(cx).time;
-        let global_store = app_state.global_store.clone();
 
-        cx.observe(&global_store, |_, _, cx| {
-            cx.notify();
-        })
-        .detach();
-
-        div().child(format!("time: {}", time))
+        div().flex().child(format!("time: {}", time))
     }
 }
 
@@ -89,7 +96,7 @@ fn main() {
         cx.activate(true);
         AppState::init(cx);
         cx.open_window(WindowOptions::default(), |cx| {
-            cx.new_view(|_| Wrapper::new())
+            cx.new_view(|cx| Wrapper::new(cx))
         });
     })
 }
