@@ -91,9 +91,14 @@ impl AppState {
     }
 }
 
+actions!(ford, [Quit]);
+
 fn main() {
     App::new().run(|cx| {
         cx.activate(true);
+        cx.on_action(|_: &Quit, cx| cx.quit());
+        cx.bind_keys([KeyBinding::new("cmd-q", Quit, None)]);
+
         AppState::init(cx);
         let _ = cx.open_window(WindowOptions::default(), |cx| {
             cx.new_view(|cx| Wrapper::new(cx))
