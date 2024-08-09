@@ -25,7 +25,7 @@ impl Wrapper {
     }
 }
 impl Render for Wrapper {
-    fn render(&mut self, cx: &mut ViewContext<Self>) -> impl IntoElement {
+    fn render(&mut self, _cx: &mut ViewContext<Self>) -> impl IntoElement {
         div()
             .size_full()
             .text_color(white())
@@ -95,7 +95,7 @@ fn main() {
     App::new().run(|cx| {
         cx.activate(true);
         AppState::init(cx);
-        cx.open_window(WindowOptions::default(), |cx| {
+        let _ = cx.open_window(WindowOptions::default(), |cx| {
             cx.new_view(|cx| Wrapper::new(cx))
         });
     })
